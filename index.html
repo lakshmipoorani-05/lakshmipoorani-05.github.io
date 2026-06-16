@@ -479,6 +479,35 @@ footer{padding:2rem 4rem;border-top:1px solid var(--card-border);display:flex;ju
   .divider{margin:0 1.5rem}
   .hero-ctas{justify-content:center}
 }
+
+/* ---- UNMUTE BUTTON ---- */
+#unmute-btn {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 20;
+  background: rgba(0,245,255,0.1);
+  border: 1.5px solid rgba(0,245,255,0.4);
+  color: #00f5ff;
+  font-family: "Fira Code", monospace;
+  font-size: 0.78rem;
+  letter-spacing: 1px;
+  padding: 0.45rem 1rem;
+  border-radius: 30px;
+  cursor: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background 0.2s, box-shadow 0.2s, transform 0.2s;
+  animation: fadeSlideDown 1s ease 1s both;
+}
+#unmute-btn:hover {
+  background: rgba(0,245,255,0.2);
+  box-shadow: 0 0 20px rgba(0,245,255,0.3);
+  transform: scale(1.05);
+}
+#unmute-btn.muted   { color: rgba(240,240,255,0.35); border-color: rgba(255,255,255,0.15); background: rgba(255,255,255,0.04); }
+#unmute-btn .icon   { font-size: 1rem; }
 </style>
 </head>
 <body>
@@ -491,6 +520,12 @@ footer{padding:2rem 4rem;border-top:1px solid var(--card-border);display:flex;ju
      INTRO SCREEN
      ============================================================ -->
 <div id="intro-screen">
+  <!-- Unmute toggle -->
+  <button id="unmute-btn" class="muted" onclick="toggleMute()">
+    <span class="icon" id="mute-icon">🔇</span>
+    <span id="mute-label">TAP FOR SOUND</span>
+  </button>
+
   <div class="float-badge badge-cyan" style="top:18%;left:8%;animation-delay:0s;">AI Engineer</div>
   <div class="float-badge badge-pink" style="top:22%;right:9%;animation-delay:0.8s;">IIT Madras</div>
   <div class="float-badge badge-lime" style="bottom:20%;left:10%;animation-delay:1.4s;">ML · Flask · Python</div>
@@ -510,7 +545,7 @@ footer{padding:2rem 4rem;border-top:1px solid var(--card-border);display:flex;ju
       <circle class="ring-bg" cx="200" cy="200" r="196"/>
       <circle class="ring-fill" id="progress-ring" cx="200" cy="200" r="196"/>
     </svg>
-    <video id="avatar-video" src="avatar.mp4" autoplay muted playsinline preload="auto"></video>
+    <video id="avatar-video" src="avatar.mp4" autoplay muted playsinline preload="auto" volume="1"></video>
     <div class="scanlines"></div>
   </div>
 
@@ -882,6 +917,32 @@ footer{padding:2rem 4rem;border-top:1px solid var(--card-border);display:flex;ju
      SCRIPTS
      ============================================================ -->
 <script>
+// ---- UNMUTE TOGGLE ----
+function toggleMute() {
+  const vid   = document.getElementById('avatar-video');
+  const btn   = document.getElementById('unmute-btn');
+  const icon  = document.getElementById('mute-icon');
+  const label = document.getElementById('mute-label');
+
+  if (vid.muted) {
+    // Unmute
+    vid.muted  = false;
+    vid.volume = 1.0;
+    icon.textContent  = '🔊';
+    label.textContent = 'SOUND ON';
+    btn.classList.remove('muted');
+    // Restart from beginning so they hear from start
+    vid.currentTime = 0;
+    vid.play();
+  } else {
+    // Mute
+    vid.muted = true;
+    icon.textContent  = '🔇';
+    label.textContent = 'TAP FOR SOUND';
+    btn.classList.add('muted');
+  }
+}
+
 // ---- CURSOR ----
 const cur = document.getElementById('cursor');
 const trail = document.getElementById('cursor-trail');
@@ -913,6 +974,8 @@ video.addEventListener('ended', () => {
   ring.style.strokeDashoffset = 0;
   enterBtn.classList.add('visible');
   skipHint.style.display = 'none';
+  const ub = document.getElementById('unmute-btn');
+  if (ub) ub.style.display = 'none';
 });
 video.addEventListener('error', () => { enterBtn.classList.add('visible'); });
 setTimeout(() => {
